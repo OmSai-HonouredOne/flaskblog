@@ -92,3 +92,12 @@ def login_required(view):
         return view(**kwargs)
 
     return wrapped_view
+
+
+@bp.route('/profile')
+@login_required
+def profile():
+    mypost = get_db().execute(
+        'SELECT * FROM post WHERE author_id = ? ORDER BY created DESC', (g.user['id'],)
+    ).fetchall()
+    return render_template('auth/profile.html', user=g.user, mypost=mypost)
