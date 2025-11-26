@@ -1,5 +1,5 @@
 import os
-from flask import Flask
+from flask import Flask, send_file, abort, request
 
 
 def create_app(test_config=None):
@@ -38,5 +38,24 @@ def create_app(test_config=None):
     from . import blog
     app.register_blueprint(blog.bp)
     app.add_url_rule('/', endpoint='index')
+
+    @app.route('/admin/backup-db')
+    def backup_db():
+        key = request.args.get("key")
+
+        # Change this to your own strong secret
+        if key != "fe6b9782d3cf16cf3701db71e7e8aa93deb73ec3bd77a84fc6ada39f58bc4845":
+            abort(403)
+
+        db_path = os.path.join(app.instance_path, "gauravaani.sqlite")
+
+        if not os.path.exists(db_path):
+            abort(404)
+
+        return send_file(
+            db_path,
+            as_attachment=True,
+            download_name="backup.sqlite"
+        )
 
     return app
