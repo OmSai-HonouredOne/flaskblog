@@ -1,1 +1,1 @@
-web: gunicorn app:flaskr
+web: gunicorn -w 2 --threads 2 --bind 0.0.0.0:$PORT 'flaskr:create_app()'
