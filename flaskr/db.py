@@ -1,4 +1,4 @@
-import sqlite3
+import psycopg2, psycopg2.extras
 from datetime import datetime
 
 import click
@@ -8,13 +8,37 @@ from flask import current_app, g
 # Database connection
 def get_db(): 
     if 'db' not in g:
-        g.db = sqlite3.connect(
-            current_app.config['DATABASE'],
-            detect_types=sqlite3.PARSE_DECLTYPES
+        g.db = psycopg2.connect(
+            current_app.config['DATABASE_URL'],
+            sslmode='require'
         )
-        g.db.row_factory = sqlite3.Row
-
     return g.db
+
+
+def query_one(sql, params=None):
+    db = get_db()
+    cur = db.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+    cur.execute(sql, params)
+    result = cur.fetchone()
+    cur.close()
+    return result
+
+
+def query_all(sql, params=None):
+    db = get_db()
+    cur = db.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+    cur.execute(sql, params)
+    result = cur.fetchall()
+    cur.close()
+    return result
+
+
+def execute(sql, params=None):
+    db = get_db()
+    cur = db.cursor()
+    cur.execute(sql, params)
+    db.commit()
+    cur.close()
 
 
 # Close database connection
@@ -25,30 +49,17 @@ def close_db(e=None):
         db.close()
 
 
-# Initialize the database
-def init_db():
-    db = get_db()
-
-    # Read and execute the schema.sql file
-    with current_app.open_resource('schema.sql') as f:
-        db.executescript(f.read().decode('utf8'))
-
-
-# CLI command to initialize the database
 @click.command('init-db')
 def init_db_command():
-    """Clear the existing data and create new tables."""
-    init_db()
-    click.echo('Initialized the database.')
+    """Test database connection."""
+    try:
+        db = psycopg2.connect(current_app.config['DATABASE_URL'], sslmode="require")
+        db.close()
+        click.echo('Database connection successful ✅')
+    except Exception as e:
+        click.echo(f'Database connection failed ❌: {e}')
 
 
-# Convert timestamp strings in SQLite to datetime objects in Python
-sqlite3.register_converter(
-    'timestamp', lambda v: datetime.fromisoformat(v.decode())
-)
-
-
-# Register database functions with the Flask app
 def init_app(app):
     app.teardown_appcontext(close_db)
     app.cli.add_command(init_db_command)
