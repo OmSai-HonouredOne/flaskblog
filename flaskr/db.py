@@ -10,14 +10,15 @@ def get_db():
     if 'db' not in g:
         g.db = psycopg2.connect(
             current_app.config['DATABASE_URL'],
-            sslmode='require'
+            sslmode='require',
+            cursor_factory=psycopg2.extras.RealDictCursor
         )
     return g.db
 
 
 def query_one(sql, params=None):
     db = get_db()
-    cur = db.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+    cur = db.cursor()
     cur.execute(sql, params)
     result = cur.fetchone()
     cur.close()
@@ -26,7 +27,7 @@ def query_one(sql, params=None):
 
 def query_all(sql, params=None):
     db = get_db()
-    cur = db.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+    cur = db.cursor()
     cur.execute(sql, params)
     result = cur.fetchall()
     cur.close()

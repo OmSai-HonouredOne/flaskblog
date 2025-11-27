@@ -9,7 +9,8 @@ def create_app(test_config=None):
     app.config.from_mapping(
         SECRET_KEY='fe6b9782d3cf16cf3701db71e7e8aa93deb73ec3bd77a84fc6ada39f58bc4845',
         # DATABASE=os.path.join(app.instance_path, 'flaskr.sqlite'),
-        DATABASE_URL='postgresql://postgres:DsmB6e0GP5VXfa8a@db.hhlafxtmnzwhvnkkaqxb.supabase.co:5432/postgres'
+        # DATABASE_URL='postgresql://postgres:DsmB6e0GP5VXfa8a@db.hhlafxtmnzwhvnkkaqxb.supabase.co:5432/postgres',  '''IPv6 address issue'''
+        DATABASE_URL='postgresql://postgres.hhlafxtmnzwhvnkkaqxb:DsmB6e0GP5VXfa8a@aws-1-ap-southeast-1.pooler.supabase.com:5432/postgres'
     )
 
     if test_config is None:
